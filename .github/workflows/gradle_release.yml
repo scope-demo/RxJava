@@ -17,14 +17,14 @@ jobs:
     env:
       CI_BUILD_NUMBER: ${{ github.run_number }}
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v2.3.4
     - name: Set up JDK 8
       uses: actions/setup-java@v2
       with:
         distribution: 'adopt'
         java-version: '8'
     - name: Cache Gradle packages
-      uses: actions/cache@v2.1.5
+      uses: actions/cache@v2.1.6
       with:
         path: ~/.gradle/caches
         key: ${{ runner.os }}-gradle-${{ secrets.CACHE_VERSION }}-${{ hashFiles('**/*.gradle') }}
@@ -35,17 +35,17 @@ jobs:
       run: chmod +x push_javadoc.sh
     - name: Extract version tag
       run: echo "BUILD_TAG=${GITHUB_REF:10}" >> $GITHUB_ENV
-    - name: Build and Release
-      run: ./gradlew -PreleaseMode=full build --stacktrace --no-daemon
+    - name: Build RxJava
+      run: ./gradlew build --stacktrace --no-daemon
     - name: Upload to Codecov  
-      uses: codecov/codecov-action@v1
+      uses: codecov/codecov-action@v1.5.2
     - name: Upload release
-      run: ./gradlew -PreleaseMode=full javadocCleanup uploadArchives --no-daemon --no-parallel --stacktrace
+      run: ./gradlew -PreleaseMode=full publish --no-daemon --no-parallel --stacktrace
       env:
         # Define secrets at https://github.com/ReactiveX/RxJava/settings/secrets/actions
         # ------------------------------------------------------------------------------ 
-        ORG_GRADLE_PROJECT_SONATYPE_NEXUS_USERNAME: ${{ secrets.SONATYPE_USER }}
-        ORG_GRADLE_PROJECT_SONATYPE_NEXUS_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+        ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.SONATYPE_USER }}
+        ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.SONATYPE_PASSWORD }}
         ORG_GRADLE_PROJECT_SIGNING_PRIVATE_KEY: ${{ secrets.SIGNING_PRIVATE_KEY }}
         ORG_GRADLE_PROJECT_SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
     - name: Publish release
@@ -53,9 +53,9 @@ jobs:
       env:
         # Define secrets at https://github.com/ReactiveX/RxJava/settings/secrets/actions
         # ------------------------------------------------------------------------------ 
-        ORG_GRADLE_PROJECT_SONATYPE_NEXUS_USERNAME: ${{ secrets.SONATYPE_USER }}
-        ORG_GRADLE_PROJECT_SONATYPE_NEXUS_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
-    - name: Push Javadocs
+        ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.SONATYPE_USER }}
+        ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.SONATYPE_PASSWORD }}
+    - name: Push Javadoc
       run: ./push_javadoc.sh
       env:
         # Define secrets at https://github.com/ReactiveX/RxJava/settings/secrets/actions
