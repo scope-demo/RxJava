@@ -107,7 +107,7 @@ import io.reactivex.rxjava3.plugins.RxJavaPlugins;
  * @param <T> the value type multicasted to Subscribers.
  * @see MulticastProcessor
  */
-public final class PublishProcessor<T> extends FlowableProcessor<T> {
+public final class PublishProcessor<@NonNull T> extends FlowableProcessor<T> {
     /** The terminated indicator for the subscribers array. */
     @SuppressWarnings("rawtypes")
     static final PublishSubscription[] TERMINATED = new PublishSubscription[0];
@@ -142,7 +142,7 @@ public final class PublishProcessor<T> extends FlowableProcessor<T> {
     }
 
     @Override
-    protected void subscribeActual(@NonNull Subscriber<@NonNull ? super T> t) {
+    protected void subscribeActual(@NonNull Subscriber<? super T> t) {
         PublishSubscription<T> ps = new PublishSubscription<>(t, this);
         t.onSubscribe(ps);
         if (add(ps)) {
@@ -271,17 +271,14 @@ public final class PublishProcessor<T> extends FlowableProcessor<T> {
     }
 
     /**
-     * Tries to emit the item to all currently subscribed Subscribers if all of them
-     * has requested some value, returns false otherwise.
+     * Tries to emit the item to all currently subscribed {@link Subscriber}s if all of them
+     * has requested some value, returns {@code false} otherwise.
      * <p>
-     * This method should be called in a sequential manner just like the onXXX methods
-     * of the PublishProcessor.
-     * <p>
-     * Calling with a null value will terminate the PublishProcessor and a NullPointerException
-     * is signaled to the Subscribers.
+     * This method should be called in a sequential manner just like the {@code onXXX} methods
+     * of this {@code PublishProcessor}.
      * <p>History: 2.0.8 - experimental
-     * @param t the item to emit, not null
-     * @return true if the item was emitted to all Subscribers
+     * @param t the item to emit, not {@code null}
+     * @return {@code true} if the item was emitted to all {@code Subscriber}s
      * @throws NullPointerException if {@code t} is {@code null}
      * @since 2.2
      */
@@ -341,7 +338,7 @@ public final class PublishProcessor<T> extends FlowableProcessor<T> {
 
         private static final long serialVersionUID = 3562861878281475070L;
         /** The actual subscriber. */
-        final Subscriber<@NonNull ? super T> downstream;
+        final Subscriber<? super T> downstream;
         /** The parent processor servicing this subscriber. */
         final PublishProcessor<T> parent;
 
@@ -350,7 +347,7 @@ public final class PublishProcessor<T> extends FlowableProcessor<T> {
          * @param actual the actual subscriber
          * @param parent the parent PublishProcessor
          */
-        PublishSubscription(Subscriber<@NonNull ? super T> actual, PublishProcessor<T> parent) {
+        PublishSubscription(Subscriber<? super T> actual, PublishProcessor<T> parent) {
             this.downstream = actual;
             this.parent = parent;
         }
@@ -365,7 +362,7 @@ public final class PublishProcessor<T> extends FlowableProcessor<T> {
                 BackpressureHelper.producedCancel(this, 1);
             } else {
                 cancel();
-                downstream.onError(new MissingBackpressureException("Could not emit value due to lack of requests"));
+                downstream.onError(MissingBackpressureException.createDefault());
             }
         }
 

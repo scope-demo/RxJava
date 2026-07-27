@@ -31,11 +31,13 @@ import io.reactivex.rxjava3.disposables.*;
 import io.reactivex.rxjava3.exceptions.*;
 import io.reactivex.rxjava3.functions.*;
 import io.reactivex.rxjava3.internal.functions.Functions;
-import io.reactivex.rxjava3.internal.fuseable.*;
 import io.reactivex.rxjava3.internal.operators.flowable.FlowableObserveOn.BaseObserveOnSubscriber;
 import io.reactivex.rxjava3.internal.schedulers.ImmediateThinScheduler;
 import io.reactivex.rxjava3.internal.subscriptions.BooleanSubscription;
 import io.reactivex.rxjava3.observers.TestObserver;
+import io.reactivex.rxjava3.operators.QueueFuseable;
+import io.reactivex.rxjava3.operators.QueueSubscription;
+import io.reactivex.rxjava3.operators.SimpleQueue;
 import io.reactivex.rxjava3.plugins.RxJavaPlugins;
 import io.reactivex.rxjava3.processors.*;
 import io.reactivex.rxjava3.schedulers.*;
@@ -577,13 +579,13 @@ public class FlowableObserveOnTest extends RxJavaTest {
         assertEquals(1, errors.size());
         System.out.println("Errors: " + errors);
         Throwable t = errors.get(0);
-        if (t instanceof MissingBackpressureException) {
+        if (t instanceof QueueOverflowException) {
             // success, we expect this
         } else {
-            if (t.getCause() instanceof MissingBackpressureException) {
+            if (t.getCause() instanceof QueueOverflowException) {
                 // this is also okay
             } else {
-                fail("Expecting MissingBackpressureException");
+                fail("Expecting QueueOverflowException");
             }
         }
     }

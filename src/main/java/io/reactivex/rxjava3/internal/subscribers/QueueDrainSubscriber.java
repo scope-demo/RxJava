@@ -20,9 +20,9 @@ import org.reactivestreams.Subscriber;
 import io.reactivex.rxjava3.core.FlowableSubscriber;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.exceptions.MissingBackpressureException;
-import io.reactivex.rxjava3.internal.fuseable.SimplePlainQueue;
 import io.reactivex.rxjava3.internal.subscriptions.SubscriptionHelper;
 import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.operators.SimplePlainQueue;
 
 /**
  * Abstract base class for subscribers that hold another subscriber, a queue
@@ -84,7 +84,7 @@ public abstract class QueueDrainSubscriber<T, U, V> extends QueueDrainSubscriber
                 }
             } else {
                 dispose.dispose();
-                s.onError(new MissingBackpressureException("Could not emit buffer due to lack of requests"));
+                s.onError(MissingBackpressureException.createDefault());
                 return;
             }
         } else {
@@ -118,7 +118,7 @@ public abstract class QueueDrainSubscriber<T, U, V> extends QueueDrainSubscriber
             } else {
                 cancelled = true;
                 dispose.dispose();
-                s.onError(new MissingBackpressureException("Could not emit buffer due to lack of requests"));
+                s.onError(MissingBackpressureException.createDefault());
                 return;
             }
         } else {

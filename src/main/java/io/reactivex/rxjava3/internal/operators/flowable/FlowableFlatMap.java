@@ -22,10 +22,9 @@ import io.reactivex.rxjava3.core.*;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.exceptions.*;
 import io.reactivex.rxjava3.functions.*;
-import io.reactivex.rxjava3.internal.fuseable.*;
-import io.reactivex.rxjava3.internal.queue.*;
 import io.reactivex.rxjava3.internal.subscriptions.SubscriptionHelper;
 import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.operators.*;
 import io.reactivex.rxjava3.plugins.RxJavaPlugins;
 
 public final class FlowableFlatMap<T, U> extends AbstractFlowableWithUpstream<T, U> {
@@ -244,7 +243,7 @@ public final class FlowableFlatMap<T, U> extends AbstractFlowableWithUpstream<T,
                         q = getMainQueue();
                     }
                     if (!q.offer(value)) {
-                        onError(new MissingBackpressureException("Scalar queue full?!"));
+                        onError(new QueueOverflowException());
                     }
                 }
                 if (decrementAndGet() == 0) {
@@ -253,7 +252,7 @@ public final class FlowableFlatMap<T, U> extends AbstractFlowableWithUpstream<T,
             } else {
                 SimpleQueue<U> q = getMainQueue();
                 if (!q.offer(value)) {
-                    onError(new MissingBackpressureException("Scalar queue full?!"));
+                    onError(new QueueOverflowException());
                     return;
                 }
                 if (getAndIncrement() != 0) {
@@ -279,7 +278,7 @@ public final class FlowableFlatMap<T, U> extends AbstractFlowableWithUpstream<T,
                         inner.queue = q;
                     }
                     if (!q.offer(value)) {
-                        onError(new MissingBackpressureException("Inner queue full?!"));
+                        onError(new QueueOverflowException());
                     }
                 }
                 if (decrementAndGet() == 0) {
@@ -292,7 +291,7 @@ public final class FlowableFlatMap<T, U> extends AbstractFlowableWithUpstream<T,
                     inner.queue = q;
                 }
                 if (!q.offer(value)) {
-                    onError(new MissingBackpressureException("Inner queue full?!"));
+                    onError(new QueueOverflowException());
                     return;
                 }
                 if (getAndIncrement() != 0) {

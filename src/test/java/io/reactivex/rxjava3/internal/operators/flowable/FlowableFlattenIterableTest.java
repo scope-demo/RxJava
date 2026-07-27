@@ -26,10 +26,11 @@ import io.reactivex.rxjava3.core.*;
 import io.reactivex.rxjava3.exceptions.*;
 import io.reactivex.rxjava3.functions.*;
 import io.reactivex.rxjava3.internal.functions.Functions;
-import io.reactivex.rxjava3.internal.fuseable.*;
 import io.reactivex.rxjava3.internal.operators.flowable.FlowableFlattenIterable.FlattenIterableSubscriber;
 import io.reactivex.rxjava3.internal.subscriptions.BooleanSubscription;
 import io.reactivex.rxjava3.internal.util.ExceptionHelper;
+import io.reactivex.rxjava3.operators.QueueFuseable;
+import io.reactivex.rxjava3.operators.QueueSubscription;
 import io.reactivex.rxjava3.plugins.RxJavaPlugins;
 import io.reactivex.rxjava3.processors.PublishProcessor;
 import io.reactivex.rxjava3.subscribers.TestSubscriber;
@@ -813,7 +814,7 @@ public class FlowableFlattenIterableTest extends RxJavaTest {
         }
         .flatMapIterable(Functions.justFunction(Arrays.asList(1)), 1)
         .test(0L)
-        .assertFailure(MissingBackpressureException.class);
+        .assertFailure(QueueOverflowException.class);
     }
 
     @Test

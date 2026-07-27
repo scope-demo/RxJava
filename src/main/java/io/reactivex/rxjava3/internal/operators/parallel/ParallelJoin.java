@@ -18,11 +18,12 @@ import java.util.concurrent.atomic.*;
 import org.reactivestreams.*;
 
 import io.reactivex.rxjava3.core.*;
-import io.reactivex.rxjava3.exceptions.MissingBackpressureException;
-import io.reactivex.rxjava3.internal.fuseable.*;
-import io.reactivex.rxjava3.internal.queue.SpscArrayQueue;
+import io.reactivex.rxjava3.exceptions.*;
 import io.reactivex.rxjava3.internal.subscriptions.SubscriptionHelper;
 import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.operators.SimplePlainQueue;
+import io.reactivex.rxjava3.operators.SimpleQueue;
+import io.reactivex.rxjava3.operators.SpscArrayQueue;
 import io.reactivex.rxjava3.parallel.ParallelFlowable;
 import io.reactivex.rxjava3.plugins.RxJavaPlugins;
 
@@ -152,7 +153,7 @@ public final class ParallelJoin<T> extends Flowable<T> {
 
                     if (!q.offer(value)) {
                         cancelAll();
-                        Throwable mbe = new MissingBackpressureException("Queue full?!");
+                        Throwable mbe = new QueueOverflowException();
                         if (errors.compareAndSet(null, mbe)) {
                             downstream.onError(mbe);
                         } else {
@@ -169,7 +170,7 @@ public final class ParallelJoin<T> extends Flowable<T> {
 
                 if (!q.offer(value)) {
                     cancelAll();
-                    onError(new MissingBackpressureException("Queue full?!"));
+                    onError(new QueueOverflowException());
                     return;
                 }
 
@@ -332,7 +333,7 @@ public final class ParallelJoin<T> extends Flowable<T> {
 
                     if (!q.offer(value)) {
                         inner.cancel();
-                        errors.tryAddThrowableOrReport(new MissingBackpressureException("Queue full?!"));
+                        errors.tryAddThrowableOrReport(new QueueOverflowException());
                         done.decrementAndGet();
                         drainLoop();
                         return;
@@ -346,7 +347,7 @@ public final class ParallelJoin<T> extends Flowable<T> {
 
                 if (!q.offer(value)) {
                     inner.cancel();
-                    errors.tryAddThrowableOrReport(new MissingBackpressureException("Queue full?!"));
+                    errors.tryAddThrowableOrReport(new QueueOverflowException());
                     done.decrementAndGet();
                 }
 

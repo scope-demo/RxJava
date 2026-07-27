@@ -18,8 +18,9 @@ import java.util.concurrent.atomic.*;
 import org.reactivestreams.*;
 
 import io.reactivex.rxjava3.core.FlowableSubscriber;
-import io.reactivex.rxjava3.internal.fuseable.*;
 import io.reactivex.rxjava3.internal.subscriptions.SubscriptionHelper;
+import io.reactivex.rxjava3.operators.QueueFuseable;
+import io.reactivex.rxjava3.operators.QueueSubscription;
 
 /**
  * An extended test subscriber that records events and allows making assertions about them.
@@ -316,8 +317,8 @@ implements FlowableSubscriber<T>, Subscription {
         int m = establishedFusionMode;
         if (m != mode) {
             if (qs != null) {
-                throw new AssertionError("Fusion mode different. Expected: " + fusionModeToString(mode)
-                + ", actual: " + fusionModeToString(m));
+                throw new AssertionError("\nexpected: " + fusionModeToString(mode)
+                + "\ngot: " + fusionModeToString(m) + "; Fusion mode different");
             } else {
                 throw fail("Upstream is not fuseable");
             }

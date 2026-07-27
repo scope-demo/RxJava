@@ -4,23 +4,22 @@ plugins {
     id("eclipse")
     id("jacoco")
     id("maven-publish")
-    id("ru.vyarus.animalsniffer") version "1.5.3"
-    id("me.champeau.gradle.jmh") version "0.5.3"
-    id("com.github.hierynomus.license") version "0.15.0"
-    id("com.jfrog.artifactory") version "4.21.0"
-    id("biz.aQute.bnd.builder") version "5.3.0"
-    id("com.vanniktech.maven.publish") version "0.14.2"
+    id("ru.vyarus.animalsniffer") version "2.0.1"
+    id("me.champeau.jmh") version "0.7.3"
+    id("com.github.hierynomus.license") version "0.16.1"
+    id("biz.aQute.bnd.builder") version "6.4.0"
+    id("com.vanniktech.maven.publish") version "0.33.0"
+    id("org.beryx.jar") version "2.0.0"
+    id("signing")
 }
 
 ext {
-    reactiveStreamsVersion = "1.0.3"
+    reactiveStreamsVersion = "1.0.4"
     junitVersion = "4.13.2"
-    testNgVersion = "7.4.0"
-    mockitoVersion = "3.9.0"
+    testNgVersion = "7.5"
+    mockitoVersion = "4.11.0"
     jmhLibVersion = "1.21"
-    guavaVersion = "30.1.1-jre"
-    jacocoVersion = "0.8.4"
-    checkstyleVersion = "8.41"
+    guavaVersion = "33.5.0-jre"
 }
 
 def releaseTag = System.getenv("BUILD_TAG")
@@ -28,17 +27,10 @@ if (releaseTag != null && !releaseTag.isEmpty()) {
     if (releaseTag.startsWith("v")) {
         releaseTag = releaseTag.substring(1)
     }
-    project.setProperty("VERSION_NAME" , releaseTag)
+    project.version = releaseTag
 
-    logger.info("Releasing with version: {}", version)
+    logger.lifecycle("Releasing with version: " + project.version)
 }
-
-group = "io.reactivex.rxjava3"
-version = project.properties["VERSION_NAME"]
-description = "RxJava: Reactive Extensions for the JVM – a library for composing asynchronous and event-based programs using observable sequences for the Java VM."
-
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
     mavenCentral()
@@ -58,12 +50,27 @@ dependencies {
     testImplementation "com.google.guava:guava:$guavaVersion"
 }
 
+def buildWith11 = System.getenv("BUILD_WITH_11")
+java {
+    toolchain {
+        vendor = JvmVendorSpec.ADOPTIUM
+        if ("true".equals(buildWith11)) {
+            languageVersion = JavaLanguageVersion.of(11)
+        } else {
+            languageVersion = JavaLanguageVersion.of(8)
+        }
+    }
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
 tasks.withType(JavaCompile) {
     options.compilerArgs << "-parameters"
 }
 
+apply from: file("gradle/javadoc_cleanup.gradle")
+
 javadoc {
-    failOnError = false
     exclude "**/internal/**"
     exclude "**/test/**"
     exclude "**/perf/**"
@@ -75,33 +82,51 @@ javadoc {
     options.addStringOption("top").value = ""
     options.addStringOption("doctitle").value = ""
     options.addStringOption("header").value = ""
-    options.stylesheetFile = rootProject.file("gradle/stylesheet.css")
+    options.stylesheetFile = project.file("gradle/stylesheet.css")
 
     options.links(
-        "https://docs.oracle.com/javase/8/docs/api/",
-        "http://www.reactive-streams.org/reactive-streams-${reactiveStreamsVersion}-javadoc/"
+            "https://docs.oracle.com/javase/8/docs/api/",
+            "https://reactivex.io/RxJava/org.reactivestreams.javadoc/${reactiveStreamsVersion}/"
     )
+
+    finalizedBy javadocCleanup
 }
 
 animalsniffer {
     annotation = "io.reactivex.rxjava3.internal.util.SuppressAnimalSniffer"
 }
 
+moduleConfig {
+    moduleInfoPath = 'src/main/module/module-info.java'
+    multiReleaseVersion = 9
+	version = project.version
+}
+
 jar {
+    from('.') {
+        include 'LICENSE'
+        include 'COPYRIGHT'
+        into('META-INF/')
+    }
+    exclude("module-info.class")
+
+    // Cover for bnd still not supporting MR Jars: https://github.com/bndtools/bnd/issues/2227
+    bnd('-fixupmessages': '^Classes found in the wrong directory: \\\\{META-INF/versions/9/module-info\\\\.class=module-info}$')
     bnd(
             "Bundle-Name": "rxjava",
             "Bundle-Vendor": "RxJava Contributors",
-            "Bundle-Description": "Reactive Extensions for the JVM – a library for composing asynchronous and event-based programs using observable sequences for the Java VM.",
+            "Bundle-Description": "Reactive Extensions for the JVM - a library for composing asynchronous and event-based programs using observable sequences for the Java VM.",
             "Import-Package": "!org.junit,!junit.framework,!org.mockito.*,!org.testng.*,*",
             "Bundle-DocURL": "https://github.com/ReactiveX/RxJava",
             "Eclipse-ExtensibleAPI": "true",
-            "Automatic-Module-Name": "io.reactivex.rxjava3",
-            "Export-Package": "!io.reactivex.rxjava3.internal.*, io.reactivex.rxjava3.*"
+            "Export-Package": "!io.reactivex.rxjava3.internal.*, io.reactivex.rxjava3.*",
+            "Bundle-SymbolicName": "io.reactivex.rxjava3.rxjava",
+            "Multi-Release": "true"
     )
 }
 
 license {
-    header rootProject.file("config/license/HEADER")
+    header project.file("config/license/HEADER")
     ext.year = Calendar.getInstance().get(Calendar.YEAR)
     skipExistingHeaders true
     ignoreFailures true
@@ -116,134 +141,79 @@ jmh {
     jvmArgsAppend = ["-Djmh.separateClasspathJAR=true"]
 
     if (project.hasProperty("jmh")) {
-        include = [".*" + project.jmh + ".*"]
-        logger.info("JMH: {}", include)
+        includes = [".*" + project.jmh + ".*"]
+        logger.info("JMH: {}", includes)
     }
-}
-
-plugins.withType(EclipsePlugin) {
-    project.eclipse.classpath.plusConfigurations += [configurations.jmh]
 }
 
 test {
-    testLogging  {
-        // showing skipped occasionally should prevent CI timeout due to lack of standard output
-        events=["skipped", "failed"] // "started", "passed"
-        // showStandardStreams = true
-        exceptionFormat="full"
+    maxHeapSize = "1200m"
+}
+
+task testNG(type: Test) {
+    useTestNG()
+}
+
+check.dependsOn testNG
+
+tasks.withType(Test) {
+    testLogging {
+        events = ["skipped", "failed"]
+        exceptionFormat = "full"
 
         debug.events = ["skipped", "failed"]
-        debug.exceptionFormat="full"
+        debug.exceptionFormat = "full"
 
         info.events = ["failed", "skipped"]
-        info.exceptionFormat="full"
-        
-        warn.events = ["failed", "skipped"]
-        warn.exceptionFormat="full"
-    }
+        info.exceptionFormat = "full"
 
-    maxHeapSize = "1200m"
+        warn.events = ["failed", "skipped"]
+        warn.exceptionFormat = "full"
+    }
 
     if (System.getenv("CI") == null) {
         maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
     }
 }
 
-task testng(type: Test) { 
-     useTestNG()
-     testLogging  {
-        events=["skipped", "failed"]
-        exceptionFormat="full"
-
-        debug.events = ["skipped", "failed"]
-        debug.exceptionFormat="full"
-
-        info.events = ["failed", "skipped"]
-        info.exceptionFormat="full"
-        
-        warn.events = ["failed", "skipped"]
-        warn.exceptionFormat="full"
-     }
-} 
-
-check.dependsOn testng 
-
-jacoco {
-    toolVersion = jacocoVersion
-}
-
 jacocoTestReport {
+    dependsOn test
+    dependsOn testNG
+
     reports {
-        xml.enabled = true
-        html.enabled = true
+            xml.required.set(true)
+	    csv.required.set(false)
+            html.required.set(true)
     }
 }
 
-build.dependsOn jacocoTestReport
+check.dependsOn jacocoTestReport
 
 checkstyle {
-    configFile = rootProject.file("config/checkstyle/checkstyle.xml")
-    toolVersion = checkstyleVersion
+    configFile = project.file("config/checkstyle/checkstyle.xml")
     configProperties = [
-            "checkstyle.suppressions.file": rootProject.file("config/checkstyle/suppressions.xml"),
-            "checkstyle.header.file": rootProject.file("config/license/HEADER_JAVA")
+            "checkstyle.suppressions.file": project.file("config/checkstyle/suppressions.xml"),
+            "checkstyle.header.file"      : project.file("config/license/HEADER_JAVA")
     ]
+    checkstyleMain.exclude '**/module-info.java'
 }
 
-apply from: file("gradle/javadoc_cleanup.gradle")
+if (project.hasProperty("releaseMode")) {
+    logger.lifecycle("ReleaseMode: {}", project.releaseMode)
 
-def fixPom() {
-    // Reactive-Streams as compile dependency
-    publishing.publications.all {
-      pom.withXml {
-        asNode().dependencies."*".findAll() {
-          it.scope.text() == "runtime" && project.configurations.compile.allDependencies.find { dep ->
-            dep.name == it.artifactId.text()
-          }
-        }.each { it.scope*.value = "compile"}
-      }
-    }
-}
 
-if (rootProject.hasProperty("releaseMode")) {
-    logger.lifecycle("ReleaseMode: {}", rootProject.releaseMode)
-
-  if ("branch".equals(rootProject.releaseMode)) {
-    // From https://github.com/ReactiveX/RxAndroid/blob/2.x/rxandroid/build.gradle#L94
-    artifactory {
-        contextUrl = "https://oss.jfrog.org"
-    
-        publish {
-            repository {
-                repoKey = "oss-snapshot-local"
-    
-                username = rootProject.bintrayUser
-                password = rootProject.bintrayKey
-            }
-    
-            defaults {
-                publishConfigs("archives")
-            }
-
-            fixPom()
-        }
-    }
-    
-    build.finalizedBy(artifactoryPublish)
-  }
-
-  if ("full".equals(rootProject.releaseMode)) {
-    fixPom()
-
+  if ("full" == project.releaseMode) {
     signing {
       if (project.hasProperty("SIGNING_PRIVATE_KEY") && project.hasProperty("SIGNING_PASSWORD")) {
          useInMemoryPgpKeys(project.getProperty("SIGNING_PRIVATE_KEY"), project.getProperty("SIGNING_PASSWORD"))
+         sign(publishing.publications)
       }
     }
-    mavenPublish {
-      nexus {
-        stagingProfile = "io.reactivex"
-      }
-    }
+  }
+  mavenPublishing {
+      // or when publishing to https://central.sonatype.com/
+      publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL)
+
+      // signAllPublications()
   }
 }

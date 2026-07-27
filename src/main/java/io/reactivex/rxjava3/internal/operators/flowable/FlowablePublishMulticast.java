@@ -21,9 +21,10 @@ import org.reactivestreams.*;
 import io.reactivex.rxjava3.core.*;
 import io.reactivex.rxjava3.exceptions.*;
 import io.reactivex.rxjava3.functions.Function;
-import io.reactivex.rxjava3.internal.fuseable.*;
 import io.reactivex.rxjava3.internal.subscriptions.*;
 import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.operators.QueueSubscription;
+import io.reactivex.rxjava3.operators.SimpleQueue;
 import io.reactivex.rxjava3.plugins.RxJavaPlugins;
 
 /**
@@ -211,7 +212,7 @@ public final class FlowablePublishMulticast<T, R> extends AbstractFlowableWithUp
             }
             if (sourceMode == QueueSubscription.NONE && !queue.offer(t)) {
                 upstream.get().cancel();
-                onError(new MissingBackpressureException());
+                onError(MissingBackpressureException.createDefault());
                 return;
             }
             drain();

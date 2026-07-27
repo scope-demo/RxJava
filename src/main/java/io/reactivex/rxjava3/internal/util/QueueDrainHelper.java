@@ -22,8 +22,7 @@ import io.reactivex.rxjava3.core.Observer;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.exceptions.*;
 import io.reactivex.rxjava3.functions.BooleanSupplier;
-import io.reactivex.rxjava3.internal.fuseable.*;
-import io.reactivex.rxjava3.internal.queue.*;
+import io.reactivex.rxjava3.operators.*;
 
 /**
  * Utility class to help with the queue-drain serialization idiom.
@@ -79,7 +78,7 @@ public final class QueueDrainHelper {
                     if (dispose != null) {
                         dispose.dispose();
                     }
-                    a.onError(new MissingBackpressureException("Could not emit value due to lack of requests."));
+                    a.onError(MissingBackpressureException.createDefault());
                     return;
                 }
             }

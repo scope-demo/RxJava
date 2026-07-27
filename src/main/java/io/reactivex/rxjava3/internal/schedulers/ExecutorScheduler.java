@@ -38,7 +38,9 @@ public final class ExecutorScheduler extends Scheduler {
     @NonNull
     final Executor executor;
 
-    static final Scheduler HELPER = Schedulers.single();
+    static final class SingleHolder {
+        static final Scheduler HELPER = Schedulers.single();
+    }
 
     public ExecutorScheduler(@NonNull Executor executor, boolean interruptibleWorker, boolean fair) {
         this.executor = executor;
@@ -97,7 +99,7 @@ public final class ExecutorScheduler extends Scheduler {
 
         final DelayedRunnable dr = new DelayedRunnable(decoratedRun);
 
-        Disposable delayed = HELPER.scheduleDirect(new DelayedDispose(dr), delay, unit);
+        Disposable delayed = SingleHolder.HELPER.scheduleDirect(new DelayedDispose(dr), delay, unit);
 
         dr.timed.replace(delayed);
 
@@ -202,7 +204,7 @@ public final class ExecutorScheduler extends Scheduler {
 
             final Runnable decoratedRun = RxJavaPlugins.onSchedule(run);
 
-            ScheduledRunnable sr = new ScheduledRunnable(new SequentialDispose(mar, decoratedRun), tasks);
+            ScheduledRunnable sr = new ScheduledRunnable(new SequentialDispose(mar, decoratedRun), tasks, interruptibleWorker);
             tasks.add(sr);
 
             if (executor instanceof ScheduledExecutorService) {
@@ -215,7 +217,7 @@ public final class ExecutorScheduler extends Scheduler {
                     return EmptyDisposable.INSTANCE;
                 }
             } else {
-                final Disposable d = HELPER.scheduleDirect(sr, delay, unit);
+                final Disposable d = SingleHolder.HELPER.scheduleDirect(sr, delay, unit);
                 sr.setFuture(new DisposeOnCancel(d));
             }
 

@@ -23,9 +23,11 @@ import io.reactivex.rxjava3.exceptions.*;
 import io.reactivex.rxjava3.flowables.ConnectableFlowable;
 import io.reactivex.rxjava3.functions.Consumer;
 import io.reactivex.rxjava3.internal.fuseable.*;
-import io.reactivex.rxjava3.internal.queue.SpscArrayQueue;
 import io.reactivex.rxjava3.internal.subscriptions.SubscriptionHelper;
 import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.operators.QueueSubscription;
+import io.reactivex.rxjava3.operators.SimpleQueue;
+import io.reactivex.rxjava3.operators.SpscArrayQueue;
 import io.reactivex.rxjava3.plugins.RxJavaPlugins;
 
 /**
@@ -224,7 +226,7 @@ implements HasUpstreamPublisher<T> {
         public void onNext(T t) {
             // we expect upstream to honor backpressure requests
             if (sourceMode == QueueSubscription.NONE && !queue.offer(t)) {
-                onError(new MissingBackpressureException("Prefetch queue is full?!"));
+                onError(new QueueOverflowException());
                 return;
             }
             // since many things can happen concurrently, we have a common dispatch

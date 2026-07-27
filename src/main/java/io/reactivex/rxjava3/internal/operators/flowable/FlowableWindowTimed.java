@@ -23,10 +23,10 @@ import io.reactivex.rxjava3.core.*;
 import io.reactivex.rxjava3.core.Scheduler.Worker;
 import io.reactivex.rxjava3.exceptions.MissingBackpressureException;
 import io.reactivex.rxjava3.internal.disposables.SequentialDisposable;
-import io.reactivex.rxjava3.internal.fuseable.SimplePlainQueue;
 import io.reactivex.rxjava3.internal.queue.MpscLinkedQueue;
 import io.reactivex.rxjava3.internal.subscriptions.SubscriptionHelper;
 import io.reactivex.rxjava3.internal.util.BackpressureHelper;
+import io.reactivex.rxjava3.operators.SimplePlainQueue;
 import io.reactivex.rxjava3.processors.UnicastProcessor;
 
 public final class FlowableWindowTimed<T> extends AbstractFlowableWithUpstream<T, Flowable<T>> {
@@ -213,7 +213,7 @@ public final class FlowableWindowTimed<T> extends AbstractFlowableWithUpstream<T
                     upstream.request(Long.MAX_VALUE);
                 } else {
                     upstream.cancel();
-                    downstream.onError(new MissingBackpressureException(missingBackpressureMessage(emitted)));
+                    downstream.onError(missingBackpressureMessage(emitted));
 
                     cleanupResources();
                     upstreamCancelled = true;
@@ -282,7 +282,7 @@ public final class FlowableWindowTimed<T> extends AbstractFlowableWithUpstream<T
                                     cleanupResources();
                                     upstreamCancelled = true;
 
-                                    downstream.onError(new MissingBackpressureException(missingBackpressureMessage(emitted)));
+                                    downstream.onError(missingBackpressureMessage(emitted));
                                 } else {
                                     emitted++;
 
@@ -386,7 +386,7 @@ public final class FlowableWindowTimed<T> extends AbstractFlowableWithUpstream<T
                     upstream.request(Long.MAX_VALUE);
                 } else {
                     upstream.cancel();
-                    downstream.onError(new MissingBackpressureException(missingBackpressureMessage(emitted)));
+                    downstream.onError(missingBackpressureMessage(emitted));
 
                     cleanupResources();
                     upstreamCancelled = true;
@@ -499,7 +499,7 @@ public final class FlowableWindowTimed<T> extends AbstractFlowableWithUpstream<T
                     cleanupResources();
                     upstreamCancelled = true;
 
-                    downstream.onError(new MissingBackpressureException(missingBackpressureMessage(emitted)));
+                    downstream.onError(missingBackpressureMessage(emitted));
                 } else {
                     this.emitted = ++emitted;
 
@@ -584,7 +584,7 @@ public final class FlowableWindowTimed<T> extends AbstractFlowableWithUpstream<T
                     upstream.request(Long.MAX_VALUE);
                 } else {
                     upstream.cancel();
-                    downstream.onError(new MissingBackpressureException(missingBackpressureMessage(emitted)));
+                    downstream.onError(missingBackpressureMessage(emitted));
 
                     cleanupResources();
                     upstreamCancelled = true;
@@ -654,7 +654,7 @@ public final class FlowableWindowTimed<T> extends AbstractFlowableWithUpstream<T
                                     }
                                 } else {
                                     upstream.cancel();
-                                    Throwable ex = new MissingBackpressureException(missingBackpressureMessage(emitted));
+                                    Throwable ex = missingBackpressureMessage(emitted);
                                     for (UnicastProcessor<T> window : windows) {
                                         window.onError(ex);
                                     }
@@ -717,8 +717,8 @@ public final class FlowableWindowTimed<T> extends AbstractFlowableWithUpstream<T
         }
     }
 
-    static String missingBackpressureMessage(long index) {
-        return "Unable to emit the next window (#" + index + ") due to lack of requests. Please make sure the downstream is ready to consume windows.";
+    static MissingBackpressureException missingBackpressureMessage(long index) {
+        return new MissingBackpressureException("Unable to emit the next window (#" + index + ") due to lack of requests. Please make sure the downstream is ready to consume windows.");
     }
 
 }

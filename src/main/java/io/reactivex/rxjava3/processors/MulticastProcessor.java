@@ -20,10 +20,9 @@ import org.reactivestreams.*;
 import io.reactivex.rxjava3.annotations.*;
 import io.reactivex.rxjava3.exceptions.*;
 import io.reactivex.rxjava3.internal.functions.ObjectHelper;
-import io.reactivex.rxjava3.internal.fuseable.*;
-import io.reactivex.rxjava3.internal.queue.*;
 import io.reactivex.rxjava3.internal.subscriptions.*;
 import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.operators.*;
 import io.reactivex.rxjava3.plugins.RxJavaPlugins;
 
 /**
@@ -130,7 +129,7 @@ import io.reactivex.rxjava3.plugins.RxJavaPlugins;
  */
 @BackpressureSupport(BackpressureKind.FULL)
 @SchedulerSupport(SchedulerSupport.NONE)
-public final class MulticastProcessor<T> extends FlowableProcessor<T> {
+public final class MulticastProcessor<@NonNull T> extends FlowableProcessor<T> {
 
     final AtomicInteger wip;
 
@@ -296,7 +295,7 @@ public final class MulticastProcessor<T> extends FlowableProcessor<T> {
             ExceptionHelper.nullCheck(t, "onNext called with a null value.");
             if (!queue.offer(t)) {
                 SubscriptionHelper.cancel(upstream);
-                onError(new MissingBackpressureException());
+                onError(MissingBackpressureException.createDefault());
                 return;
             }
         }
@@ -370,7 +369,7 @@ public final class MulticastProcessor<T> extends FlowableProcessor<T> {
     }
 
     @Override
-    protected void subscribeActual(@NonNull Subscriber<@NonNull ? super T> s) {
+    protected void subscribeActual(@NonNull Subscriber<? super T> s) {
         MulticastSubscription<T> ms = new MulticastSubscription<>(s, this);
         s.onSubscribe(ms);
         if (add(ms)) {
@@ -584,17 +583,17 @@ public final class MulticastProcessor<T> extends FlowableProcessor<T> {
         }
     }
 
-    static final class MulticastSubscription<T> extends AtomicLong implements Subscription {
+    static final class MulticastSubscription<@NonNull T> extends AtomicLong implements Subscription {
 
         private static final long serialVersionUID = -363282618957264509L;
 
-        final Subscriber<@NonNull ? super T> downstream;
+        final Subscriber<? super T> downstream;
 
         final MulticastProcessor<T> parent;
 
         long emitted;
 
-        MulticastSubscription(Subscriber<@NonNull ? super T> actual, MulticastProcessor<T> parent) {
+        MulticastSubscription(Subscriber<? super T> actual, MulticastProcessor<T> parent) {
             this.downstream = actual;
             this.parent = parent;
         }

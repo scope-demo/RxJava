@@ -30,9 +30,9 @@ import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.exceptions.TestException;
 import io.reactivex.rxjava3.functions.*;
 import io.reactivex.rxjava3.internal.functions.Functions;
-import io.reactivex.rxjava3.internal.fuseable.QueueFuseable;
 import io.reactivex.rxjava3.internal.operators.observable.ObservableScalarXMap.ScalarDisposable;
 import io.reactivex.rxjava3.observers.TestObserver;
+import io.reactivex.rxjava3.operators.QueueFuseable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.*;
 
@@ -1274,7 +1274,7 @@ public class TestObserverExTest extends RxJavaTest {
 
     @Test
     public void assertValueAtIndexNoMatch() {
-        assertThrows("expected: b (class: String) but was: c (class: String) (latch = 0, values = 3, errors = 0, completions = 1)", AssertionError.class, () -> {
+        assertThrows("\nexpected: b (class: String)\ngot: c (class: String) (latch = 0, values = 3, errors = 0, completions = 1)", AssertionError.class, () -> {
             TestObserverEx<String> to = new TestObserverEx<>();
 
             Observable.just("a", "b", "c").subscribe(to);

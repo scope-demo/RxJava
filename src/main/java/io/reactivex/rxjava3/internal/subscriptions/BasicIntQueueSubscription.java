@@ -15,14 +15,15 @@ package io.reactivex.rxjava3.internal.subscriptions;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import io.reactivex.rxjava3.internal.fuseable.QueueSubscription;
+import io.reactivex.rxjava3.annotations.NonNull;
+import io.reactivex.rxjava3.operators.QueueSubscription;
 
 /**
  * Base class extending AtomicInteger (wip or request accounting) and QueueSubscription (fusion).
  *
  * @param <T> the value type
  */
-public abstract class BasicIntQueueSubscription<T> extends AtomicInteger implements QueueSubscription<T> {
+public abstract class BasicIntQueueSubscription<@NonNull T> extends AtomicInteger implements QueueSubscription<T> {
 
     private static final long serialVersionUID = -6671519529404341862L;
 

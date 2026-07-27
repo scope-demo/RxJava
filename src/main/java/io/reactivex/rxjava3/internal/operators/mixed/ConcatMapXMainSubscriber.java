@@ -18,11 +18,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.reactivestreams.Subscription;
 
 import io.reactivex.rxjava3.core.FlowableSubscriber;
-import io.reactivex.rxjava3.exceptions.MissingBackpressureException;
-import io.reactivex.rxjava3.internal.fuseable.*;
-import io.reactivex.rxjava3.internal.queue.SpscArrayQueue;
+import io.reactivex.rxjava3.exceptions.*;
 import io.reactivex.rxjava3.internal.subscriptions.SubscriptionHelper;
 import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.operators.QueueFuseable;
+import io.reactivex.rxjava3.operators.QueueSubscription;
+import io.reactivex.rxjava3.operators.SimpleQueue;
+import io.reactivex.rxjava3.operators.SpscArrayQueue;
 
 /**
  * Base class for implementing concatMapX main subscribers.
@@ -97,7 +99,7 @@ implements FlowableSubscriber<T> {
         if (t != null) {
             if (!queue.offer(t)) {
                 upstream.cancel();
-                onError(new MissingBackpressureException("queue full?!"));
+                onError(new QueueOverflowException());
                 return;
             }
         }

@@ -16,9 +16,10 @@ package io.reactivex.rxjava3.testsupport;
 import java.util.List;
 
 import io.reactivex.rxjava3.functions.Predicate;
-import io.reactivex.rxjava3.internal.fuseable.QueueFuseable;
 import io.reactivex.rxjava3.internal.util.ExceptionHelper;
 import io.reactivex.rxjava3.observers.BaseTestConsumer;
+import io.reactivex.rxjava3.operators.QueueFuseable;
+
 import java.util.Objects;
 
 /**
@@ -159,7 +160,8 @@ extends BaseTestConsumer<T, U> {
             Throwable e = errors.get(0);
             String errorMessage = e.getMessage();
             if (!Objects.equals(message, errorMessage)) {
-                throw fail("Error message differs; exptected: " + message + " but was: " + errorMessage);
+                throw fail("\nexpected: " + message + "\ngot: " + errorMessage
+                + "; Error message differs");
             }
         } else {
             throw fail("Multiple errors");

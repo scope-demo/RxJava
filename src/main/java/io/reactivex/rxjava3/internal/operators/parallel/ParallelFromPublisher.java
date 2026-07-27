@@ -19,10 +19,11 @@ import org.reactivestreams.*;
 
 import io.reactivex.rxjava3.core.FlowableSubscriber;
 import io.reactivex.rxjava3.exceptions.*;
-import io.reactivex.rxjava3.internal.fuseable.*;
-import io.reactivex.rxjava3.internal.queue.SpscArrayQueue;
 import io.reactivex.rxjava3.internal.subscriptions.SubscriptionHelper;
 import io.reactivex.rxjava3.internal.util.BackpressureHelper;
+import io.reactivex.rxjava3.operators.QueueSubscription;
+import io.reactivex.rxjava3.operators.SimpleQueue;
+import io.reactivex.rxjava3.operators.SpscArrayQueue;
 import io.reactivex.rxjava3.parallel.ParallelFlowable;
 import io.reactivex.rxjava3.plugins.RxJavaPlugins;
 
@@ -203,7 +204,7 @@ public final class ParallelFromPublisher<T> extends ParallelFlowable<T> {
             if (sourceMode == QueueSubscription.NONE) {
                 if (!queue.offer(t)) {
                     upstream.cancel();
-                    onError(new MissingBackpressureException("Queue is full?"));
+                    onError(new QueueOverflowException());
                     return;
                 }
             }

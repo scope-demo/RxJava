@@ -1,8 +1,30 @@
 # Contributing to RxJava 3.x
 
+:warning: We ask you to contribute your change to the 4.x branch because since March 2026, we are developing RxJava 4.0.0 only. It will be then decided if a backport is necessary or feasible. We do not plan to release any more 3.x versions unless there is a very good reason or a flaw that needs patching and cannot be worked around otherwise.
+
+Thank you for your consideration.
+
+------------
+
 If you would like to contribute code you can do so through GitHub by forking the repository and sending a pull request targeting the branch `3.x`.
 
 When submitting code, please make every effort to follow existing conventions and style in order to keep the code as readable as possible.
+
+## AI contributions
+
+We are not against contributions from AI tools, LLM-based or future architectures. However, you as a human are responsible for its contributions and suggestions.
+
+This means, you have to make sure it doesn't hallucinate issues or elements of the contribution, doesn't try to hack rewards or hack established unit tests, doesn't go wild
+and rearchitect established components.
+
+If you post a contribution that is broken, we will not argue with your LLM or prompt engineer for you. You are responsible for having the the LLM's output work within the confines
+of this project.
+
+Please also be aware that this project is large both in current and historical sense with some rules not documented or enforced by unit tests. This is because such unwritten rules
+were trivial or readily inferrable by humans in the past. The project predates LLMs several years and thus is not organized to be accessible by LLMs today. Nor should it be.
+
+Consequently, the amount of prompting and the context window size to include all possible information about it could become so much that it can become prohibitively expensive to have
+an LLM come up with more than basic and trivial contributions. Needless to say, don't bankrupt yourself and don't just accept the LLM's output at face value.
 
 ## License
 

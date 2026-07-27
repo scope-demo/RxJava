@@ -22,9 +22,9 @@ import org.reactivestreams.Subscription;
 import io.reactivex.rxjava3.core.*;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.exceptions.*;
-import io.reactivex.rxjava3.internal.queue.SpscArrayQueue;
 import io.reactivex.rxjava3.internal.subscriptions.SubscriptionHelper;
 import io.reactivex.rxjava3.internal.util.*;
+import io.reactivex.rxjava3.operators.SpscArrayQueue;
 
 public final class BlockingFlowableIterable<T> implements Iterable<T> {
     final Flowable<T> source;
@@ -138,9 +138,12 @@ public final class BlockingFlowableIterable<T> implements Iterable<T> {
         @Override
         public void onNext(T t) {
             if (!queue.offer(t)) {
+                // Error must be set first before calling cancel to avoid race
+                // with hasNext(), which checks for cancel first before checking
+                // for error.
+                error = new QueueOverflowException();
                 SubscriptionHelper.cancel(this);
-
-                onError(new MissingBackpressureException("Queue full?!"));
+                onComplete();
             } else {
                 signalConsumer();
             }

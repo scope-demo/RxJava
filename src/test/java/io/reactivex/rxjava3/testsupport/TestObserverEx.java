@@ -18,7 +18,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import io.reactivex.rxjava3.core.*;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.internal.disposables.DisposableHelper;
-import io.reactivex.rxjava3.internal.fuseable.*;
+import io.reactivex.rxjava3.operators.QueueDisposable;
+import io.reactivex.rxjava3.operators.QueueFuseable;
 
 /**
  * An  extended test Observer that records events and allows making assertions about them.
@@ -253,8 +254,8 @@ implements Observer<T>, Disposable, MaybeObserver<T>, SingleObserver<T>, Complet
         int m = establishedFusionMode;
         if (m != mode) {
             if (qd != null) {
-                throw new AssertionError("Fusion mode different. Expected: " + fusionModeToString(mode)
-                + ", actual: " + fusionModeToString(m));
+                throw new AssertionError("\nexpected: " + fusionModeToString(mode)
+                + "\ngot: " + fusionModeToString(m) + "; Fusion mode different");
             } else {
                 throw fail("Upstream is not fuseable");
             }

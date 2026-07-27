@@ -25,7 +25,7 @@ import org.reactivestreams.*;
 import io.reactivex.rxjava3.core.*;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Observer;
-import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.disposables.*;
 import io.reactivex.rxjava3.exceptions.TestException;
 import io.reactivex.rxjava3.functions.*;
 import io.reactivex.rxjava3.internal.functions.Functions;
@@ -149,9 +149,11 @@ public class ParamValidationCheckerTest {
         // negative time is considered as zero time
         addOverride(new ParamOverride(Flowable.class, 0, ParamMode.ANY, "debounce", Long.TYPE, TimeUnit.class));
         addOverride(new ParamOverride(Flowable.class, 0, ParamMode.ANY, "debounce", Long.TYPE, TimeUnit.class, Scheduler.class));
+        addOverride(new ParamOverride(Flowable.class, 0, ParamMode.ANY, "debounce", Long.TYPE, TimeUnit.class, Scheduler.class, Consumer.class));
 
         // null Action allowed
         addOverride(new ParamOverride(Flowable.class, 1, ParamMode.ANY, "onBackpressureBuffer", Long.TYPE, Action.class, BackpressureOverflowStrategy.class));
+        addOverride(new ParamOverride(Flowable.class, 1, ParamMode.ANY, "onBackpressureBuffer", Long.TYPE, Action.class, BackpressureOverflowStrategy.class, Consumer.class));
 
         // zero repeat is allowed
         addOverride(new ParamOverride(Flowable.class, 0, ParamMode.NON_NEGATIVE, "repeat", Long.TYPE));
@@ -177,6 +179,7 @@ public class ParamValidationCheckerTest {
         // negative time is considered as zero time
         addOverride(new ParamOverride(Flowable.class, 0, ParamMode.ANY, "throttleWithTimeout", Long.TYPE, TimeUnit.class));
         addOverride(new ParamOverride(Flowable.class, 0, ParamMode.ANY, "throttleWithTimeout", Long.TYPE, TimeUnit.class, Scheduler.class));
+        addOverride(new ParamOverride(Flowable.class, 0, ParamMode.ANY, "throttleWithTimeout", Long.TYPE, TimeUnit.class, Scheduler.class, Consumer.class));
 
         // negative time is considered as zero time
         addOverride(new ParamOverride(Flowable.class, 0, ParamMode.ANY, "take", Long.TYPE, TimeUnit.class));
@@ -190,6 +193,7 @@ public class ParamValidationCheckerTest {
         addOverride(new ParamOverride(Flowable.class, 0, ParamMode.ANY, "sample", Long.TYPE, TimeUnit.class, Boolean.TYPE));
         addOverride(new ParamOverride(Flowable.class, 0, ParamMode.ANY, "sample", Long.TYPE, TimeUnit.class, Scheduler.class));
         addOverride(new ParamOverride(Flowable.class, 0, ParamMode.ANY, "sample", Long.TYPE, TimeUnit.class, Scheduler.class, Boolean.TYPE));
+        addOverride(new ParamOverride(Flowable.class, 0, ParamMode.ANY, "sample", Long.TYPE, TimeUnit.class, Scheduler.class, Boolean.TYPE, Consumer.class));
 
         // negative time is considered as zero time
         addOverride(new ParamOverride(Flowable.class, 0, ParamMode.ANY, "takeLast", Long.TYPE, TimeUnit.class));
@@ -220,16 +224,19 @@ public class ParamValidationCheckerTest {
         // negative time is considered as zero time
         addOverride(new ParamOverride(Flowable.class, 0, ParamMode.ANY, "throttleFirst", Long.TYPE, TimeUnit.class));
         addOverride(new ParamOverride(Flowable.class, 0, ParamMode.ANY, "throttleFirst", Long.TYPE, TimeUnit.class, Scheduler.class));
+        addOverride(new ParamOverride(Flowable.class, 0, ParamMode.ANY, "throttleFirst", Long.TYPE, TimeUnit.class, Scheduler.class, Consumer.class));
 
         // negative time is considered as zero time
         addOverride(new ParamOverride(Flowable.class, 0, ParamMode.ANY, "throttleLast", Long.TYPE, TimeUnit.class));
         addOverride(new ParamOverride(Flowable.class, 0, ParamMode.ANY, "throttleLast", Long.TYPE, TimeUnit.class, Scheduler.class));
+        addOverride(new ParamOverride(Flowable.class, 0, ParamMode.ANY, "throttleLast", Long.TYPE, TimeUnit.class, Scheduler.class, Consumer.class));
 
         // negative time is considered as zero time
         addOverride(new ParamOverride(Flowable.class, 0, ParamMode.ANY, "throttleLatest", Long.TYPE, TimeUnit.class));
         addOverride(new ParamOverride(Flowable.class, 0, ParamMode.ANY, "throttleLatest", Long.TYPE, TimeUnit.class, Scheduler.class));
         addOverride(new ParamOverride(Flowable.class, 0, ParamMode.ANY, "throttleLatest", Long.TYPE, TimeUnit.class, Boolean.TYPE));
         addOverride(new ParamOverride(Flowable.class, 0, ParamMode.ANY, "throttleLatest", Long.TYPE, TimeUnit.class, Scheduler.class, Boolean.TYPE));
+        addOverride(new ParamOverride(Flowable.class, 0, ParamMode.ANY, "throttleLatest", Long.TYPE, TimeUnit.class, Scheduler.class, Boolean.TYPE, Consumer.class));
 
         // negative buffer time is considered as zero buffer time
         addOverride(new ParamOverride(Flowable.class, 0, ParamMode.ANY, "window", Long.TYPE, TimeUnit.class));
@@ -396,6 +403,7 @@ public class ParamValidationCheckerTest {
         // negative time is considered as zero time
         addOverride(new ParamOverride(Observable.class, 0, ParamMode.ANY, "debounce", Long.TYPE, TimeUnit.class));
         addOverride(new ParamOverride(Observable.class, 0, ParamMode.ANY, "debounce", Long.TYPE, TimeUnit.class, Scheduler.class));
+        addOverride(new ParamOverride(Observable.class, 0, ParamMode.ANY, "debounce", Long.TYPE, TimeUnit.class, Scheduler.class, Consumer.class));
 
         // zero repeat is allowed
         addOverride(new ParamOverride(Observable.class, 0, ParamMode.NON_NEGATIVE, "repeat", Long.TYPE));
@@ -421,6 +429,7 @@ public class ParamValidationCheckerTest {
         // negative time is considered as zero time
         addOverride(new ParamOverride(Observable.class, 0, ParamMode.ANY, "throttleWithTimeout", Long.TYPE, TimeUnit.class));
         addOverride(new ParamOverride(Observable.class, 0, ParamMode.ANY, "throttleWithTimeout", Long.TYPE, TimeUnit.class, Scheduler.class));
+        addOverride(new ParamOverride(Observable.class, 0, ParamMode.ANY, "throttleWithTimeout", Long.TYPE, TimeUnit.class, Scheduler.class, Consumer.class));
 
         // negative time is considered as zero time
         addOverride(new ParamOverride(Observable.class, 0, ParamMode.ANY, "take", Long.TYPE, TimeUnit.class));
@@ -434,6 +443,7 @@ public class ParamValidationCheckerTest {
         addOverride(new ParamOverride(Observable.class, 0, ParamMode.ANY, "sample", Long.TYPE, TimeUnit.class, Boolean.TYPE));
         addOverride(new ParamOverride(Observable.class, 0, ParamMode.ANY, "sample", Long.TYPE, TimeUnit.class, Scheduler.class));
         addOverride(new ParamOverride(Observable.class, 0, ParamMode.ANY, "sample", Long.TYPE, TimeUnit.class, Scheduler.class, Boolean.TYPE));
+        addOverride(new ParamOverride(Observable.class, 0, ParamMode.ANY, "sample", Long.TYPE, TimeUnit.class, Scheduler.class, Boolean.TYPE, Consumer.class));
 
         // negative time is considered as zero time
         addOverride(new ParamOverride(Observable.class, 0, ParamMode.ANY, "takeLast", Long.TYPE, TimeUnit.class));
@@ -464,16 +474,19 @@ public class ParamValidationCheckerTest {
         // negative time is considered as zero time
         addOverride(new ParamOverride(Observable.class, 0, ParamMode.ANY, "throttleFirst", Long.TYPE, TimeUnit.class));
         addOverride(new ParamOverride(Observable.class, 0, ParamMode.ANY, "throttleFirst", Long.TYPE, TimeUnit.class, Scheduler.class));
+        addOverride(new ParamOverride(Observable.class, 0, ParamMode.ANY, "throttleFirst", Long.TYPE, TimeUnit.class, Scheduler.class, Consumer.class));
 
         // negative time is considered as zero time
         addOverride(new ParamOverride(Observable.class, 0, ParamMode.ANY, "throttleLast", Long.TYPE, TimeUnit.class));
         addOverride(new ParamOverride(Observable.class, 0, ParamMode.ANY, "throttleLast", Long.TYPE, TimeUnit.class, Scheduler.class));
+        addOverride(new ParamOverride(Observable.class, 0, ParamMode.ANY, "throttleLast", Long.TYPE, TimeUnit.class, Scheduler.class, Consumer.class));
 
         // negative time is considered as zero time
         addOverride(new ParamOverride(Observable.class, 0, ParamMode.ANY, "throttleLatest", Long.TYPE, TimeUnit.class));
         addOverride(new ParamOverride(Observable.class, 0, ParamMode.ANY, "throttleLatest", Long.TYPE, TimeUnit.class, Scheduler.class));
         addOverride(new ParamOverride(Observable.class, 0, ParamMode.ANY, "throttleLatest", Long.TYPE, TimeUnit.class, Boolean.TYPE));
         addOverride(new ParamOverride(Observable.class, 0, ParamMode.ANY, "throttleLatest", Long.TYPE, TimeUnit.class, Scheduler.class, Boolean.TYPE));
+        addOverride(new ParamOverride(Observable.class, 0, ParamMode.ANY, "throttleLatest", Long.TYPE, TimeUnit.class, Scheduler.class, Boolean.TYPE, Consumer.class));
 
         // negative buffer time is considered as zero buffer time
         addOverride(new ParamOverride(Observable.class, 0, ParamMode.ANY, "window", Long.TYPE, TimeUnit.class));
@@ -560,6 +573,7 @@ public class ParamValidationCheckerTest {
         for (Class<?> interfaces : AllFunctionals.class.getInterfaces()) {
             defaultValues.put(interfaces, af);
         }
+        defaultValues.put(Subscriber.class, af);
         defaultValues.put(TimeUnit.class, TimeUnit.SECONDS);
         defaultValues.put(Scheduler.class, Schedulers.single());
         defaultValues.put(BackpressureStrategy.class, BackpressureStrategy.MISSING);
@@ -579,6 +593,8 @@ public class ParamValidationCheckerTest {
         defaultValues.put(Subscriber[].class, new Subscriber[] { new AllFunctionals() });
 
         defaultValues.put(ParallelFailureHandling.class, ParallelFailureHandling.ERROR);
+
+        defaultValues.put(DisposableContainer.class, new CompositeDisposable());
 
         // JDK 8 types
 
@@ -924,7 +940,7 @@ public class ParamValidationCheckerTest {
     Function3, Function4, Function5, Function6, Function7, Function8, Function9,
     FlowableOnSubscribe, ObservableOnSubscribe, SingleOnSubscribe, MaybeOnSubscribe, CompletableOnSubscribe,
     FlowableTransformer, ObservableTransformer, SingleTransformer, MaybeTransformer, CompletableTransformer,
-    Subscriber, FlowableSubscriber, Observer, SingleObserver, MaybeObserver, CompletableObserver,
+    FlowableSubscriber, Observer, SingleObserver, MaybeObserver, CompletableObserver,
     FlowableOperator, ObservableOperator, SingleOperator, MaybeOperator, CompletableOperator,
     Comparator, ParallelTransformer
     {

@@ -19,7 +19,7 @@ import java.util.concurrent.*;
 import org.reactivestreams.*;
 
 import io.reactivex.rxjava3.annotations.*;
-import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.disposables.*;
 import io.reactivex.rxjava3.exceptions.*;
 import io.reactivex.rxjava3.functions.*;
 import io.reactivex.rxjava3.internal.functions.*;
@@ -29,7 +29,7 @@ import io.reactivex.rxjava3.internal.observers.*;
 import io.reactivex.rxjava3.internal.operators.completable.*;
 import io.reactivex.rxjava3.internal.operators.maybe.*;
 import io.reactivex.rxjava3.internal.operators.mixed.*;
-import io.reactivex.rxjava3.internal.operators.single.*;
+import io.reactivex.rxjava3.internal.operators.single.SingleDelayWithCompletable;
 import io.reactivex.rxjava3.observers.TestObserver;
 import io.reactivex.rxjava3.plugins.RxJavaPlugins;
 import io.reactivex.rxjava3.schedulers.Schedulers;
@@ -52,7 +52,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
  * Note that as with the {@code Observable} protocol, {@code onError} and {@code onComplete} are mutually exclusive events.
  * <p>
  * Like {@code Observable}, a running {@code Completable} can be stopped through the {@link Disposable} instance
- * provided to consumers through {@link SingleObserver#onSubscribe}.
+ * provided to consumers through {@link CompletableObserver#onSubscribe}.
  * <p>
  * Like an {@code Observable}, a {@code Completable} is lazy, can be either "hot" or "cold", synchronous or
  * asynchronous. {@code Completable} instances returned by the methods of this class are <em>cold</em>
@@ -479,7 +479,7 @@ public abstract class Completable implements CompletableSource {
     @CheckReturnValue
     @NonNull
     @SchedulerSupport(SchedulerSupport.NONE)
-    public static Completable defer(@NonNull Supplier<? extends CompletableSource> supplier) {
+    public static Completable defer(@NonNull Supplier<? extends @NonNull CompletableSource> supplier) {
         Objects.requireNonNull(supplier, "supplier is null");
         return RxJavaPlugins.onAssembly(new CompletableDefer(supplier));
     }
@@ -503,7 +503,7 @@ public abstract class Completable implements CompletableSource {
     @CheckReturnValue
     @NonNull
     @SchedulerSupport(SchedulerSupport.NONE)
-    public static Completable error(@NonNull Supplier<? extends Throwable> supplier) {
+    public static Completable error(@NonNull Supplier<? extends @NonNull Throwable> supplier) {
         Objects.requireNonNull(supplier, "supplier is null");
         return RxJavaPlugins.onAssembly(new CompletableErrorSupplier(supplier));
     }
@@ -601,6 +601,7 @@ public abstract class Completable implements CompletableSource {
      * @param future the {@code Future} to react to
      * @return the new {@code Completable} instance
      * @throws NullPointerException if {@code future} is {@code null}
+     * @see #fromCompletionStage(CompletionStage)
      */
     @CheckReturnValue
     @NonNull
@@ -630,7 +631,7 @@ public abstract class Completable implements CompletableSource {
     @CheckReturnValue
     @NonNull
     @SchedulerSupport(SchedulerSupport.NONE)
-    public static <T> Completable fromMaybe(@NonNull MaybeSource<T> maybe) {
+    public static <@NonNull T> Completable fromMaybe(@NonNull MaybeSource<T> maybe) {
         Objects.requireNonNull(maybe, "maybe is null");
         return RxJavaPlugins.onAssembly(new MaybeIgnoreElementCompletable<>(maybe));
     }
@@ -686,7 +687,7 @@ public abstract class Completable implements CompletableSource {
     @CheckReturnValue
     @NonNull
     @SchedulerSupport(SchedulerSupport.NONE)
-    public static <T> Completable fromObservable(@NonNull ObservableSource<T> observable) {
+    public static <@NonNull T> Completable fromObservable(@NonNull ObservableSource<T> observable) {
         Objects.requireNonNull(observable, "observable is null");
         return RxJavaPlugins.onAssembly(new CompletableFromObservable<>(observable));
     }
@@ -724,7 +725,7 @@ public abstract class Completable implements CompletableSource {
     @NonNull
     @BackpressureSupport(BackpressureKind.UNBOUNDED_IN)
     @SchedulerSupport(SchedulerSupport.NONE)
-    public static <T> Completable fromPublisher(@NonNull Publisher<T> publisher) {
+    public static <@NonNull T> Completable fromPublisher(@NonNull Publisher<T> publisher) {
         Objects.requireNonNull(publisher, "publisher is null");
         return RxJavaPlugins.onAssembly(new CompletableFromPublisher<>(publisher));
     }
@@ -746,7 +747,7 @@ public abstract class Completable implements CompletableSource {
     @CheckReturnValue
     @NonNull
     @SchedulerSupport(SchedulerSupport.NONE)
-    public static <T> Completable fromSingle(@NonNull SingleSource<T> single) {
+    public static <@NonNull T> Completable fromSingle(@NonNull SingleSource<T> single) {
         Objects.requireNonNull(single, "single is null");
         return RxJavaPlugins.onAssembly(new CompletableFromSingle<>(single));
     }
@@ -1225,7 +1226,7 @@ public abstract class Completable implements CompletableSource {
     @CheckReturnValue
     @SchedulerSupport(SchedulerSupport.NONE)
     @NonNull
-    public static <R> Completable using(@NonNull Supplier<R> resourceSupplier,
+    public static <@NonNull R> Completable using(@NonNull Supplier<R> resourceSupplier,
             @NonNull Function<? super R, ? extends CompletableSource> sourceSupplier,
             @NonNull Consumer<? super R> resourceCleanup) {
         return using(resourceSupplier, sourceSupplier, resourceCleanup, true);
@@ -1261,7 +1262,7 @@ public abstract class Completable implements CompletableSource {
     @CheckReturnValue
     @NonNull
     @SchedulerSupport(SchedulerSupport.NONE)
-    public static <R> Completable using(
+    public static <@NonNull R> Completable using(
             @NonNull Supplier<R> resourceSupplier,
             @NonNull Function<? super R, ? extends CompletableSource> sourceSupplier,
             @NonNull Consumer<? super R> resourceCleanup,
@@ -2194,7 +2195,7 @@ public abstract class Completable implements CompletableSource {
     @CheckReturnValue
     @SchedulerSupport(SchedulerSupport.NONE)
     @NonNull
-    public final <T> Single<Notification<T>> materialize() {
+    public final <@NonNull T> Single<Notification<T>> materialize() {
         return RxJavaPlugins.onAssembly(new CompletableMaterialize<>(this));
     }
 
@@ -2356,7 +2357,7 @@ public abstract class Completable implements CompletableSource {
     @CheckReturnValue
     @NonNull
     @SchedulerSupport(SchedulerSupport.NONE)
-    public final <T> Maybe<T> onErrorReturn(@NonNull Function<? super Throwable, ? extends T> itemSupplier) {
+    public final <@NonNull T> Maybe<T> onErrorReturn(@NonNull Function<? super Throwable, ? extends T> itemSupplier) {
         Objects.requireNonNull(itemSupplier, "itemSupplier is null");
         return RxJavaPlugins.onAssembly(new CompletableOnErrorReturn<>(this, itemSupplier));
     }
@@ -2384,7 +2385,7 @@ public abstract class Completable implements CompletableSource {
     @CheckReturnValue
     @NonNull
     @SchedulerSupport(SchedulerSupport.NONE)
-    public final <T> Maybe<T> onErrorReturnItem(@NonNull T item) {
+    public final <@NonNull T> Maybe<T> onErrorReturnItem(@NonNull T item) {
         Objects.requireNonNull(item, "item is null");
         return onErrorReturn(Functions.justFunction(item));
     }
@@ -2483,7 +2484,7 @@ public abstract class Completable implements CompletableSource {
     @CheckReturnValue
     @SchedulerSupport(SchedulerSupport.NONE)
     @NonNull
-    public final Completable repeatWhen(@NonNull Function<? super Flowable<Object>, ? extends Publisher<@NonNull ?>> handler) {
+    public final Completable repeatWhen(@NonNull Function<? super Flowable<Object>, @NonNull ? extends Publisher<@NonNull ?>> handler) {
         return fromPublisher(toFlowable().repeatWhen(handler));
     }
 
@@ -2655,7 +2656,7 @@ public abstract class Completable implements CompletableSource {
     @CheckReturnValue
     @SchedulerSupport(SchedulerSupport.NONE)
     @NonNull
-    public final Completable retryWhen(@NonNull Function<? super Flowable<Throwable>, ? extends Publisher<@NonNull ?>> handler) {
+    public final Completable retryWhen(@NonNull Function<? super Flowable<Throwable>, @NonNull ? extends Publisher<@NonNull ?>> handler) {
         return fromPublisher(toFlowable().retryWhen(handler));
     }
 
@@ -2726,7 +2727,7 @@ public abstract class Completable implements CompletableSource {
     @NonNull
     @SchedulerSupport(SchedulerSupport.NONE)
     @BackpressureSupport(BackpressureKind.FULL)
-    public final <T> Flowable<T> startWith(@NonNull SingleSource<T> other) {
+    public final <@NonNull T> Flowable<T> startWith(@NonNull SingleSource<T> other) {
         Objects.requireNonNull(other, "other is null");
         return Flowable.concat(Single.wrap(other).toFlowable(), toFlowable());
     }
@@ -2752,7 +2753,7 @@ public abstract class Completable implements CompletableSource {
     @NonNull
     @SchedulerSupport(SchedulerSupport.NONE)
     @BackpressureSupport(BackpressureKind.FULL)
-    public final <T> Flowable<T> startWith(@NonNull MaybeSource<T> other) {
+    public final <@NonNull T> Flowable<T> startWith(@NonNull MaybeSource<T> other) {
         Objects.requireNonNull(other, "other is null");
         return Flowable.concat(Maybe.wrap(other).toFlowable(), toFlowable());
     }
@@ -2774,7 +2775,7 @@ public abstract class Completable implements CompletableSource {
     @CheckReturnValue
     @NonNull
     @SchedulerSupport(SchedulerSupport.NONE)
-    public final <T> Observable<T> startWith(@NonNull ObservableSource<T> other) {
+    public final <@NonNull T> Observable<T> startWith(@NonNull ObservableSource<T> other) {
         Objects.requireNonNull(other, "other is null");
         return Observable.wrap(other).concatWith(this.toObservable());
     }
@@ -2800,7 +2801,7 @@ public abstract class Completable implements CompletableSource {
     @NonNull
     @BackpressureSupport(BackpressureKind.FULL)
     @SchedulerSupport(SchedulerSupport.NONE)
-    public final <T> Flowable<T> startWith(@NonNull Publisher<T> other) {
+    public final <@NonNull T> Flowable<T> startWith(@NonNull Publisher<T> other) {
         Objects.requireNonNull(other, "other is null");
         return this.<T>toFlowable().startWith(other);
     }
@@ -2836,6 +2837,7 @@ public abstract class Completable implements CompletableSource {
      *  <dd>{@code subscribe} does not operate by default on a particular {@link Scheduler}.</dd>
      * </dl>
      * @return the new {@code Disposable} that can be used for disposing the subscription at any time
+     * @see #subscribe(Action, Consumer, DisposableContainer)
      */
     @SchedulerSupport(SchedulerSupport.NONE)
     @NonNull
@@ -2921,6 +2923,7 @@ public abstract class Completable implements CompletableSource {
      * @param onError the {@link Consumer} that is called if this {@code Completable} emits an error
      * @return the new {@link Disposable} that can be used for disposing the subscription at any time
      * @throws NullPointerException if {@code onComplete} or {@code onError} is {@code null}
+     * @see #subscribe(Action, Consumer, DisposableContainer)
      */
     @CheckReturnValue
     @NonNull
@@ -2930,6 +2933,44 @@ public abstract class Completable implements CompletableSource {
         Objects.requireNonNull(onComplete, "onComplete is null");
 
         CallbackCompletableObserver observer = new CallbackCompletableObserver(onError, onComplete);
+        subscribe(observer);
+        return observer;
+    }
+
+    /**
+     * Wraps the given onXXX callbacks into a {@link Disposable} {@link CompletableObserver},
+     * adds it to the given {@link DisposableContainer} and ensures, that if the upstream
+     * terminates or this particular {@code Disposable} is disposed, the {@code CompletableObserver} is removed
+     * from the given composite.
+     * <p>
+     * The {@code CompletableObserver} will be removed after the callback for the terminal event has been invoked.
+     * <dl>
+     *  <dt><b>Scheduler:</b></dt>
+     *  <dd>{@code subscribe} does not operate by default on a particular {@link Scheduler}.</dd>
+     * </dl>
+     * @param onError the callback for an upstream error
+     * @param onComplete the callback for an upstream completion
+     * @param container the {@code DisposableContainer} (such as {@link CompositeDisposable}) to add and remove the
+     *                  created {@code Disposable} {@code CompletableObserver}
+     * @return the {@code Disposable} that allows disposing the particular subscription.
+     * @throws NullPointerException
+     *             if {@code onComplete}, {@code onError}
+     *             or {@code container} is {@code null}
+     * @since 3.1.0
+     */
+    @SchedulerSupport(SchedulerSupport.NONE)
+    @NonNull
+    public final Disposable subscribe(
+            @NonNull Action onComplete,
+            @NonNull Consumer<? super Throwable> onError,
+            @NonNull DisposableContainer container) {
+        Objects.requireNonNull(onComplete, "onComplete is null");
+        Objects.requireNonNull(onError, "onError is null");
+        Objects.requireNonNull(container, "container is null");
+
+        DisposableAutoReleaseMultiObserver<Void> observer = new DisposableAutoReleaseMultiObserver<>(
+                container, Functions.emptyConsumer(), onError, onComplete);
+        container.add(observer);
         subscribe(observer);
         return observer;
     }
@@ -2950,16 +2991,13 @@ public abstract class Completable implements CompletableSource {
      * @param onComplete the {@code Action} called when this {@code Completable} completes normally
      * @return the new {@link Disposable} that can be used for disposing the subscription at any time
      * @throws NullPointerException if {@code onComplete} is {@code null}
+     * @see #subscribe(Action, Consumer, DisposableContainer)
      */
     @CheckReturnValue
     @NonNull
     @SchedulerSupport(SchedulerSupport.NONE)
     public final Disposable subscribe(@NonNull Action onComplete) {
-        Objects.requireNonNull(onComplete, "onComplete is null");
-
-        CallbackCompletableObserver observer = new CallbackCompletableObserver(onComplete);
-        subscribe(observer);
-        return observer;
+        return subscribe(onComplete, Functions.ON_ERROR_MISSING);
     }
 
     /**
@@ -3173,7 +3211,7 @@ public abstract class Completable implements CompletableSource {
     @BackpressureSupport(BackpressureKind.FULL)
     @SchedulerSupport(SchedulerSupport.NONE)
     @NonNull
-    public final <T> Flowable<T> toFlowable() {
+    public final <@NonNull T> Flowable<T> toFlowable() {
         if (this instanceof FuseToFlowable) {
             return ((FuseToFlowable<T>)this).fuseToFlowable();
         }
@@ -3218,7 +3256,7 @@ public abstract class Completable implements CompletableSource {
     @SuppressWarnings("unchecked")
     @SchedulerSupport(SchedulerSupport.NONE)
     @NonNull
-    public final <T> Maybe<T> toMaybe() {
+    public final <@NonNull T> Maybe<T> toMaybe() {
         if (this instanceof FuseToMaybe) {
             return ((FuseToMaybe<T>)this).fuseToMaybe();
         }
@@ -3241,7 +3279,7 @@ public abstract class Completable implements CompletableSource {
     @SuppressWarnings("unchecked")
     @SchedulerSupport(SchedulerSupport.NONE)
     @NonNull
-    public final <T> Observable<T> toObservable() {
+    public final <@NonNull T> Observable<T> toObservable() {
         if (this instanceof FuseToObservable) {
             return ((FuseToObservable<T>)this).fuseToObservable();
         }
@@ -3373,7 +3411,7 @@ public abstract class Completable implements CompletableSource {
      * <img width="640" height="262" src="https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/fromCompletionStage.c.png" alt="">
      * <p>
      * Note that the operator takes an already instantiated, running or terminated {@code CompletionStage}.
-     * If the optional is to be created per consumer upon subscription, use {@link #defer(Supplier)}
+     * If the {@code CompletionStage} is to be created per consumer upon subscription, use {@link #defer(Supplier)}
      * around {@code fromCompletionStage}:
      * <pre><code>
      * Maybe.defer(() -&gt; Completable.fromCompletionStage(createCompletionStage()));
@@ -3428,7 +3466,7 @@ public abstract class Completable implements CompletableSource {
     @CheckReturnValue
     @SchedulerSupport(SchedulerSupport.NONE)
     @NonNull
-    public final <T> CompletionStage<T> toCompletionStage(@Nullable T defaultItem) {
+    public final <@Nullable T> CompletionStage<T> toCompletionStage(T defaultItem) {
         return subscribeWith(new CompletionStageConsumer<>(true, defaultItem));
     }
 }

@@ -30,8 +30,8 @@ import io.reactivex.rxjava3.core.*;
 import io.reactivex.rxjava3.exceptions.*;
 import io.reactivex.rxjava3.functions.*;
 import io.reactivex.rxjava3.internal.functions.Functions;
-import io.reactivex.rxjava3.internal.fuseable.QueueSubscription;
 import io.reactivex.rxjava3.internal.subscriptions.BooleanSubscription;
+import io.reactivex.rxjava3.operators.QueueSubscription;
 import io.reactivex.rxjava3.plugins.RxJavaPlugins;
 import io.reactivex.rxjava3.processors.PublishProcessor;
 import io.reactivex.rxjava3.schedulers.Schedulers;
@@ -1870,7 +1870,7 @@ public class FlowableZipTest extends RxJavaTest {
     public void firstErrorPreventsSecondSubscription() {
         final AtomicInteger counter = new AtomicInteger();
 
-        List<Flowable<?>> flowableList = new ArrayList<>();
+        List<Flowable<Object>> flowableList = new ArrayList<>();
         flowableList.add(Flowable.create(new FlowableOnSubscribe<Object>() {
             @Override
             public void subscribe(FlowableEmitter<Object> e)
